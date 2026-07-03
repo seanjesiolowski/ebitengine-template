@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+  ===========================================================================
+  FILE MAP — web/index.html
+  ===========================================================================
+  WHAT THIS PAGE DOES
+    This is the browser's version of "the window". It loads the compiled game
+    (firstgame.wasm) and runs it. Ebiten builds and attaches its own <canvas>
+    to this page for you, so there's no canvas tag to manage here.
+
+  THE THREE PIECES (read top-down)
+    STYLE   -> center the game and give it a dark backdrop
+    GLUE    -> wasm_exec.js: Go's runtime shim that lets a .wasm talk to JS
+    RUN     -> fetch the .wasm, then start it (this is the "go run ." of the web)
+  ===========================================================================
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>first ebiten game</title>
+
+    <!-- STYLE: dark backdrop; the canvas fills the whole window. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #202020;
+      }
+      /* The game now sizes its drawing area to the window (see Layout in
+         main.go), so we let its <canvas> fill the viewport completely — no
+         fixed aspect ratio, no bars in any direction. !important is needed
+         because Ebiten sets the canvas size inline itself. */
+      canvas {
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- GLUE: Go's runtime shim. Must match the Go version that built the .wasm;
+         the build script re-copies it every time so it never drifts. -->
+    <script src="wasm_exec.js"></script>
+
+    <!-- RUN: load the compiled game, then start it. -->
+    <script>
+      const go = new Go(); // Go is defined by wasm_exec.js above.
+      WebAssembly.instantiateStreaming(fetch("firstgame.wasm"), go.importObject)
+        .then((result) => go.run(result.instance))
+        .catch((err) => console.error("Failed to start the game:", err));
+    </script>
+  </body>
+</html>
